@@ -7,7 +7,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.CubicCurve;
-import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 public class SplineWithCubic_Points extends Application {
@@ -24,7 +23,8 @@ public class SplineWithCubic_Points extends Application {
     
     private Circle c = new Circle(100,100,3);
 
-    Anchor prevC2, currentC1, currentC2 = null;
+//    Anchor prevC2, currentC1, currentC2 = null;
+    ControlHandle prevHandle, currentHandle;
 
     private double radius = 6f;
     private double radiusC = radius*0.6;
@@ -32,6 +32,7 @@ public class SplineWithCubic_Points extends Application {
     @Override
     public void start(Stage primaryStage) {
         Pane pane = new Pane();
+        pane.setStyle("-fx-background-color: #" + String.format("%02x%02x%02x" , 180, 180, 180 ));
         pane.getChildren().add(c);
         pane.setOnMousePressed(e -> {
             currentPoint = new Point2D(e.getX(), e.getY());
@@ -40,45 +41,39 @@ public class SplineWithCubic_Points extends Application {
                 System.out.println("line2" + currentPoint);
                 currentCurve = makeCurve(basePoint, prevPoint, currentPoint, prevCurve);
                 pane.getChildren().add(currentCurve);
-                Line controlLine1 = new BoundLine(currentCurve.controlX1Property(), currentCurve.controlY1Property(), currentCurve.startXProperty(), currentCurve.startYProperty());
-                Line controlLine2 = new BoundLine(currentCurve.controlX2Property(), currentCurve.controlY2Property(), currentCurve.endXProperty(),   currentCurve.endYProperty());
-                pane.getChildren().add(controlLine1);
-                pane.getChildren().add(controlLine2);
                 currentStartAnchor = new Anchor(Color.PALEGREEN, currentCurve.startXProperty(),
                         currentCurve.startYProperty(), radius);
                 pane.getChildren().add(currentStartAnchor);
                 currentEndAnchor = new Anchor(Color.PALEGREEN, currentCurve.endXProperty(),
                         currentCurve.endYProperty(), radius);
                 pane.getChildren().add(currentEndAnchor);
-                currentC1 = new Anchor(Color.GOLD, currentCurve.controlX1Property(), currentCurve.controlY1Property(), radiusC);
-                pane.getChildren().add(currentC1);
-                currentC2 = new Anchor(Color.GOLDENROD, currentCurve.controlX2Property(),
-                        currentCurve.controlY2Property(), radiusC);
-                pane.getChildren().add(currentC2);
+
+                currentHandle = new ControlHandle(prevCurve, currentCurve, radiusC);
+                pane.getChildren().add(currentHandle);
+                updateCurve(basePoint, prevPoint, currentPoint, currentCurve);
+
+//                Line controlLine1 = new BoundLine(currentCurve.controlX1Property(), currentCurve.controlY1Property(), currentCurve.startXProperty(), currentCurve.startYProperty());
+//                Line controlLine2 = new BoundLine(currentCurve.controlX2Property(), currentCurve.controlY2Property(), currentCurve.endXProperty(),   currentCurve.endYProperty());
+//                pane.getChildren().add(controlLine1);
+//                pane.getChildren().add(controlLine2);
+//                currentC1 = new Anchor(Color.GOLD, currentCurve.controlX1Property(), currentCurve.controlY1Property(), radiusC);
+//                pane.getChildren().add(currentC1);
+//                currentC2 = new Anchor(Color.GOLDENROD, currentCurve.controlX2Property(),
+//                        currentCurve.controlY2Property(), radiusC);
+//                pane.getChildren().add(currentC2);
             }
         });
         pane.setOnMouseDragged(e -> {
             currentPoint = new Point2D(e.getX(), e.getY());
-            updateCurve(basePoint, prevPoint, currentPoint, currentCurve, prevCurve);
-            if (prevCurve != null) {
-                prevC2.setCenterX(prevCurve.getControlX2());
-                prevC2.setCenterY(prevCurve.getControlY2());
-                currentC1.setCenterX(currentCurve.getControlX1());
-                currentC1.setCenterY(currentCurve.getControlY1());
-                currentC2.setCenterX(currentCurve.getControlX2());
-                currentC2.setCenterY(currentCurve.getControlY2());
-            }
-
+            updateCurve(basePoint, prevPoint, currentPoint, currentCurve);
         });
 
         pane.setOnMouseReleased(e -> {
-            currentPoint = new Point2D(e.getX(), e.getY());
             basePoint = prevPoint;
             prevPoint = currentPoint;
             prevCurve = currentCurve;
-            prevC2 = currentC2;
+            prevHandle = currentHandle;
             currentPoint = null;
-
         });
 
         Scene scene = new Scene(pane, 600, 600);
@@ -88,8 +83,9 @@ public class SplineWithCubic_Points extends Application {
 
     private CubicCurve makeCurve(Point2D basePoint, Point2D prevPoint, Point2D currentPoint, CubicCurve prevCurve) {
         CubicCurve cc = new CubicCurve();
-        updateCurve(basePoint, prevPoint, currentPoint, cc, prevCurve);
+//        updateCurve(basePoint, prevPoint, currentPoint, cc);
         cc.setStroke(Color.BLACK);
+        cc.setStrokeWidth(3);
         cc.setFill(null);
         if (prevCurve != null) {
             cc.startXProperty().bindBidirectional(prevCurve.endXProperty());
@@ -98,8 +94,7 @@ public class SplineWithCubic_Points extends Application {
         return cc;
     }
 
-    private void updateCurve(Point2D startPoint, Point2D midPoint, Point2D endPoint, CubicCurve cc,
-            CubicCurve prevCurve) {
+    private void updateCurve(Point2D startPoint, Point2D midPoint, Point2D endPoint, CubicCurve cc    ) {
         if(midPoint != null && endPoint != null) {
             Point2D currentControl1 = midPoint;
             Point2D control2 = endPoint;
@@ -109,21 +104,13 @@ public class SplineWithCubic_Points extends Application {
                 final Point2D seconfArmVect = midPoint.subtract(endPoint);
                 double secondArmLength = seconfArmVect.magnitude() * 0.4;
     
-//                final Point2D normStartVect = firstArmVect.normalize();
-//                final Point2D normEndVect = seconfArmVect.normalize();
-//                final Point2D c1Direction = normStartVect.subtract(normEndVect).normalize();
-                
-                final Point2D mid = startPoint.midpoint(endPoint);
-                c.setCenterX(mid.getX());
-                c.setCenterY(mid.getY());
-                final Point2D midToMid = mid.subtract(midPoint);
-                final Point2D c1Direction = new Point2D(midToMid.getY(), -midToMid.getX()).normalize();
+                final Point2D normStartVect = firstArmVect.normalize();
+                final Point2D normEndVect = seconfArmVect.normalize();
+                final Point2D c1Direction = normStartVect.subtract(normEndVect).normalize();
                 
                 currentControl1 = midPoint.add(c1Direction.multiply(secondArmLength));
-                Point2D prevControl2 = midPoint.subtract(c1Direction.multiply(firstArmLength));
-                if (prevCurve != null) {
-                    prevCurve.setControlX2(prevControl2.getX());
-                    prevCurve.setControlY2(prevControl2.getY());
+                if (currentHandle != null) {
+                    currentHandle.updateC2PosAutosize(currentControl1);
                 }
             }
             cc.setStartX(midPoint.getX());
@@ -138,7 +125,7 @@ public class SplineWithCubic_Points extends Application {
 
     }
 
-    public static void main(String[] args) {
+    public static void run(String[] args) {
         launch(args);
     }
 

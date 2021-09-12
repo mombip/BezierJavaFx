@@ -1,8 +1,5 @@
-package bezier.handles;
+package bezier.handles.pathmanipulator;
 
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javafx.application.Application;
 import javafx.beans.property.DoubleProperty;
@@ -13,17 +10,19 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.CubicCurve;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.StrokeLineCap;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.*;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Example of how a cubic curve works, drag the anchors around to change the curve. */
 public class PathManipulator extends Application {
+
   public static void main(String[] args) throws Exception { launch(args); }
-  @Override public void start(final Stage stage) throws Exception {
+
+  @Override
+  public void start(final Stage stage) throws Exception {
     CubicCurve curve = createStartingCurve();
 
     Line controlLine1 = new BoundLine(curve.controlX1Property(), curve.controlY1Property(), curve.startXProperty(), curve.startYProperty());

@@ -6,14 +6,20 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 
 class BoundLine extends Line {
-    BoundLine(DoubleProperty startX, DoubleProperty startY, DoubleProperty endX, DoubleProperty endY) {
+    public BoundLine(DoubleProperty startX, DoubleProperty startY, DoubleProperty endX, DoubleProperty endY) {
       startXProperty().bind(startX);
       startYProperty().bind(startY);
       endXProperty().bind(endX);
       endYProperty().bind(endY);
       setStrokeWidth(2);
-      setStroke(Color.GRAY.deriveColor(0, 1, 1, 0.5));
+      setStroke(Color.DIMGRAY);
       setStrokeLineCap(StrokeLineCap.BUTT);
       getStrokeDashArray().setAll(10.0, 5.0);
     }
+
+    public BoundLine(Anchor p1, Anchor p2){
+        this(p1.centerXProperty(), p1.centerYProperty(), p1.centerXProperty(), p1.centerYProperty());
+    }
+
+
   }

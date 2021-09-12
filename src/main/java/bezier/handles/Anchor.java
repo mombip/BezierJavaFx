@@ -3,24 +3,29 @@ package bezier.handles;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.event.EventHandler;
+import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 
+
 public class Anchor extends Circle {
     Anchor(Color color, DoubleProperty x, DoubleProperty y, double size) {
         super(x.get(), y.get(), size);
-        setFill(color.deriveColor(1, 1, 1, 0.5));
+        setFill(color.deriveColor(1, 1, 1, 0.1));
         setStroke(color);
         setStrokeWidth(2);
-        setStrokeType(StrokeType.OUTSIDE);
+        setStrokeType(StrokeType.INSIDE);
 
         x.bindBidirectional(centerXProperty());
         y.bindBidirectional(centerYProperty());
         enableDrag();
     }
+
+
+
 
     // make a node movable by dragging it around with the mouse.
     private void enableDrag() {
@@ -72,6 +77,10 @@ public class Anchor extends Circle {
                 }
             }
         });
+    }
+
+    public Point2D getCenter() {
+        return new Point2D(centerXProperty().get(), centerYProperty().get()) ;
     }
 
     // records relative x and y co-ordinates.
