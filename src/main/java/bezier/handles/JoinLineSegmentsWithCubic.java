@@ -19,6 +19,8 @@ public class JoinLineSegmentsWithCubic extends Application {
     public void start(Stage primaryStage) {
         Pane pane = new Pane();
         pane.setOnDragDetected(e -> {
+            System.out.println(e);
+            System.out.println(e);
             currentDraggingLine = new Line(e.getX(), e.getY(), e.getX(), e.getY());
             pane.getChildren().add(currentDraggingLine);
             if (unconnectedLine != null) {
@@ -27,6 +29,12 @@ public class JoinLineSegmentsWithCubic extends Application {
                 currentCurve = makeCurve(unconnectedLine, currentDraggingLine, pane);
             }
         });
+        
+//        pane.setOnMousePressed(e -> {
+//            System.out.println(e);
+//            pane.getOnMouseReleased();      
+//        });
+        
         pane.setOnMouseDragged(e -> {
             if (currentDraggingLine != null) {
                 currentDraggingLine.setEndX(e.getX());
@@ -34,6 +42,7 @@ public class JoinLineSegmentsWithCubic extends Application {
                 updateCurve(unconnectedLine, currentDraggingLine, currentCurve);
             }
         });
+        
         pane.setOnMouseReleased(e -> {
             if (currentDraggingLine != null) {
                 currentDraggingLine.setEndX(e.getX());

@@ -31,6 +31,7 @@ public class ControlHandle extends Group {
             getChildren().add(this.curve1);
             getChildren().add(control1);
             getChildren().add(controlLine1);
+
         }
 
         if(curve2 != null){
@@ -41,15 +42,23 @@ public class ControlHandle extends Group {
             getChildren().add(control2);
             getChildren().add(controlLine2);
         }
-//        control1.centerXProperty().addListener(pos -> {
-//            updateAnchor(control2, control1.getCenter());
-//        });
-//        control1.centerYProperty().addListener(pos -> {
-//            updateAnchor(control2, control1.getCenter());
-//        });
-//        control2.centerXProperty().addListener(pos -> {
-//            updateAnchor(control1, control2.getCenter());
-//        });
+        
+        if(control1 != null && control2 != null){
+            
+            control1.centerXProperty().addListener(pos -> {
+                updateAnchor(control2, control1.getCenter());
+            });
+            control1.centerYProperty().addListener(pos -> {
+                updateAnchor(control2, control1.getCenter());
+            });
+//            control2.centerXProperty().addListener(pos -> {
+//                updateAnchor(control1, control2.getCenter());
+//            });
+//            control2.centerYProperty().addListener(pos -> {
+//                updateAnchor(control1, control2.getCenter());
+//            });
+        }
+        
     }
 
 

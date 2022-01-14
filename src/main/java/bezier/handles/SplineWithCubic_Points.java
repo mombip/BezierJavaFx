@@ -1,5 +1,6 @@
 package bezier.handles;
 
+import javafx.animation.Interpolator;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
@@ -61,6 +62,10 @@ public class SplineWithCubic_Points extends Application {
 //                currentC2 = new Anchor(Color.GOLDENROD, currentCurve.controlX2Property(),
 //                        currentCurve.controlY2Property(), radiusC);
 //                pane.getChildren().add(currentC2);
+                Interpolator.SPLINE(radius, radius, radiusC, radius);
+                
+//                pane.getChildren().add();
+                
             }
         });
         pane.setOnMouseDragged(e -> {
