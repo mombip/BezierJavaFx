@@ -72,9 +72,14 @@ public class ControlHandle extends Group {
     }
 
     private double getAutoC1Length() {
-        Point2D startPoint = new Point2D(curve1.getStartX(), curve1.getStartY());
-        Point2D endPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
-        return endPoint.subtract(startPoint).magnitude() * 0.4;
+    	Point2D startPoint = new Point2D(curve1.getStartX(), curve1.getStartY());
+    	Point2D midPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
+    	Point2D endPoint = new Point2D(curve2.getEndX(), curve2.getEndY());
+    	final Point2D baseVect = endPoint.subtract(startPoint);
+    	double baseLength = baseVect.magnitude();
+
+        double curve1Length = midPoint.subtract(startPoint).magnitude();
+		return (curve1Length+baseLength) * 0.2;
     }
 
     public void updateAnchor(Anchor anchor, Point2D otherAnchorPos) {
