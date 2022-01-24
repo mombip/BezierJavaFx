@@ -1,37 +1,32 @@
 package bezier.handles;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.commons.math3.analysis.interpolation.AkimaSplineInterpolator;
-import org.apache.commons.math3.analysis.interpolation.BicubicInterpolatingFunction;
-import org.apache.commons.math3.analysis.interpolation.BicubicInterpolator;
-import org.apache.commons.math3.analysis.interpolation.SmoothingPolynomialBicubicSplineInterpolator;
-import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
-import com.sun.javafx.geom.Path2D;
 import com.sun.javafx.geom.PathIterator;
 import com.sun.javafx.geom.Shape;
 
 import javafx.application.Application;
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.QuadCurveTo;
 import javafx.stage.Stage;
-import te.ClampedSplineInterpolator;
 
 public class SplineWithCubic_Points extends Application {
 
@@ -55,12 +50,17 @@ public class SplineWithCubic_Points extends Application {
     private List<CubicCurve> splineSegments = new ArrayList<>();
 
     @Override 
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws FileNotFoundException {
         Pane pane = new Pane();
-        pane.setStyle("-fx-background-color: #" + String.format("%02x%02x%02x" , 180, 180, 180 ));
+//        Group root = new Group(pane);
+//        root.getChildren().add(createImage());
+        Group root = new Group(createImage());
+        root.getChildren().add(pane);
+//        pane.setStyle("-fx-background-color: #" + String.format("%02x%02x%02x" , 180, 180, 180 ));
+        pane.setStyle("-fx-background-color: transparent;");
 //        pane.getChildren().add(c);
        
-        pane.setOnMousePressed(e -> {
+        root.setOnMousePressed(e -> {
         	pane.requestFocus();
             currentPoint = new Point2D(e.getX(), e.getY());
 //            points.add(currentPoint);
@@ -68,7 +68,7 @@ public class SplineWithCubic_Points extends Application {
                 addCurveSegmentForPoint(pane, currentPoint);
             }
         });
-        pane.setOnMouseDragged(e -> {
+        root.setOnMouseDragged(e -> {
             currentPoint = new Point2D(e.getX(), e.getY());
 //            updateCurve(basePoint, prevPoint, currentPoint, currentCurve);
             if(prevCurve!=null) {
@@ -76,7 +76,7 @@ public class SplineWithCubic_Points extends Application {
             }
         });
 
-        pane.setOnMouseReleased(e -> {
+        root.setOnMouseReleased(e -> {
             basePoint = prevPoint;
             prevPoint = currentPoint;
 //            prevCurve = currentCurve;
@@ -84,7 +84,7 @@ public class SplineWithCubic_Points extends Application {
             currentPoint = null;
         });
         
-        pane.setOnKeyPressed(e -> {
+        root.setOnKeyPressed(e -> {
         	if(e.getCode() == KeyCode.DELETE) {
         		pane.getChildren().clear();
         	    basePoint = null;
@@ -95,19 +95,35 @@ public class SplineWithCubic_Points extends Application {
         	}
         });
 
-        Scene scene = new Scene(pane,1600, 800);
+        Scene scene = new Scene(root,1600, 1000);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-	private void addCurveSegmentForPoint(Pane pane, Point2D newPoint) {
+	private ImageView createImage() throws FileNotFoundException {
+	    InputStream stream = this.getClass().getClassLoader().getResourceAsStream("spline.png");
+	      Image image = new Image(stream);
+	      //Creating the image view
+	      ImageView imageView = new ImageView();
+	      //Setting image to the image view
+	      imageView.setImage(image);
+	      //Setting the image view parameters
+	      imageView.setX(10);
+	      imageView.setY(10);
+	      imageView.setFitWidth(575);
+	      imageView.setPreserveRatio(true);
+	      return imageView;
+        
+    }
+
+    private void addCurveSegmentForPoint(Pane pane, Point2D newPoint) {
 		System.out.println("line1" + prevPoint);
 		System.out.println("line2" + newPoint);
 		
 
 		CubicCurve currentCurve = makeCurve(basePoint, prevPoint, newPoint, prevCurve);
-		
-		pane.getChildren().add(currentCurve);
+
+		pane.getChildren().add(0, currentCurve);
 		Anchor currentStartAnchor = new Anchor(Color.PALEGREEN, currentCurve.startXProperty(),
 		        currentCurve.startYProperty(), radius);
 		pane.getChildren().add(currentStartAnchor);
@@ -119,29 +135,30 @@ public class SplineWithCubic_Points extends Application {
 		pane.getChildren().add(currentHandle);
 		updateCurve(basePoint, prevPoint, newPoint, currentCurve);
 		
-//		addSpline(pane);
 		prevCurve = currentCurve;
-		updateSpline(splineSegments);
+
+//		addSpline(pane);
+//		updateSpline(splineSegments);
 	}
 
 	private void updateSpline(List<CubicCurve> splineSegments2) {
 		
-		double[] x = splineSegments.stream()
-			.mapToDouble(curve -> curve.getStartX())
-			.toArray();
-		
-		double[] y = splineSegments.stream()
-				.mapToDouble(curve -> curve.getStartY())
-				.toArray();
-		
-		ClampedSplineInterpolator asi = new ClampedSplineInterpolator();
-		PolynomialSplineFunction psf = asi.interpolate(x, y, 0,0);
-		
-//		Path2D path = new Path2D();
-////		path.
-//		splineSegments.stream().forEach(c -> path.quadToSmooth((float)c.getStartX(), (float)c.getStartY()));
-		
-		 printPolySplineFun(psf);
+//		double[] x = splineSegments.stream()
+//			.mapToDouble(curve -> curve.getStartX())
+//			.toArray();
+//		
+//		double[] y = splineSegments.stream()
+//				.mapToDouble(curve -> curve.getStartY())
+//				.toArray();
+//		
+//		ClampedSplineInterpolator asi = new ClampedSplineInterpolator();
+//		PolynomialSplineFunction psf = asi.interpolate(x, y, 0,0);
+//		
+////		Path2D path = new Path2D();
+//////		path.
+////		splineSegments.stream().forEach(c -> path.quadToSmooth((float)c.getStartX(), (float)c.getStartY()));
+//		
+//		 printPolySplineFun(psf);
 
 		
 	}
@@ -240,20 +257,25 @@ public class SplineWithCubic_Points extends Application {
             Point2D control2 = endPoint;
             if(startPoint != null ) {
             	
+//                final Point2D baseVect = endPoint.subtract(startPoint);
+//                final Point2D baseVectNorm = baseVect.normalize();
+                
                 final Point2D arm1Vect = midPoint.subtract(startPoint);
 //                double firstArmLength = arm1Vect.magnitude();
                 final Point2D arm2Vect = midPoint.subtract(endPoint);
 				double arm2Length = arm2Vect.magnitude();
     				
-                final Point2D normStartVect = arm1Vect.normalize();
-                final Point2D normEndVect = arm2Vect.normalize();
-                final Point2D c1Direction = normStartVect.subtract(normEndVect).normalize();
-//                final Point2D c1Direction = firstArmVect.subtract(secondArmVect).normalize();
+                final Point2D arm1VectNorm = arm1Vect.normalize();
+                final Point2D arm2VectNorm = arm2Vect.normalize();
+                final Point2D c1Direction = arm1VectNorm.subtract(arm2VectNorm).normalize();
+//                final Point2D c1Direction = baseVectNorm;
                 
 
+                double arm2ProjLength = Math.abs(c1Direction.dotProduct(arm2Vect)); 
+//                double smoothFactor = 0.2;
+//                double c1Length = (arm2ProjLength + arm2Length) * smoothFactor;
                 double smoothFactor = 0.4;
-                double arm2ProjLength = c1Direction.multiply(-1).dotProduct(arm2Vect); 
-                double c1Length = arm2ProjLength * smoothFactor * arm2Length/arm2ProjLength;
+                double c1Length = (arm2ProjLength) * smoothFactor;
 
                 control1 = midPoint.add(c1Direction.multiply(c1Length));
                 if (currentHandle != null) {

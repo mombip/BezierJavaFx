@@ -67,32 +67,46 @@ public class ControlHandle extends Group {
         if(control1 != null){
             control2.centerXProperty().set(pos.getX());
             control2.centerYProperty().set(pos.getY());
-            updateAnchor(this.control1, control2.getCenter(), getAutoC1Length() );
+            
+            updateAnchor(this.control1, control2.getCenter() );
         }
     }
 
-    private double getAutoC1Length() {
+    private double getAutoC2Length(Point2D c2Point) {
     	Point2D startPoint = new Point2D(curve1.getStartX(), curve1.getStartY());
     	Point2D midPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
     	Point2D endPoint = new Point2D(curve2.getEndX(), curve2.getEndY());
-    	final Point2D baseVect = endPoint.subtract(startPoint);
-    	double baseLength = baseVect.magnitude();
-
-        double curve1Length = midPoint.subtract(startPoint).magnitude();
-		return (curve1Length+baseLength) * 0.2;
+    	
+//    	 final Point2D baseVect = endPoint.subtract(startPoint);
+//         final Point2D baseVectNorm = baseVect.normalize();
+//         Point2D c2Direction = baseVectNorm;
+    	Point2D c2Direction = midPoint.subtract(c2Point).normalize();
+    	final Point2D armVect = midPoint.subtract(startPoint);
+        double armVectLength = armVect.magnitude();
+    	
+        double arm2ProjLength = Math.abs(c2Direction.dotProduct(armVect)); 
+//        double smoothFactor = 0.2;
+//        double c2Length = (arm2ProjLength+armVectLength) * smoothFactor;
+        double smoothFactor = 0.4;
+        double c2Length = (arm2ProjLength) * smoothFactor;
+    	
+		return c2Length;
     }
 
-    public void updateAnchor(Anchor anchor, Point2D otherAnchorPos) {
-        Point2D endPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
-        double c1Length = anchor.getCenter().subtract(endPoint).magnitude();
-        updateAnchor(anchor, otherAnchorPos, c1Length);
-    }
+//    public void updateAnchor(Anchor c2Anchor, Point2D otherAnchorPos) {
+//        Point2D midPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
+//        double c1Length = c2Anchor.getCenter().subtract(midPoint).magnitude();
+//        updateAnchor(c2Anchor, otherAnchorPos, c1Length);
+//    }
 
-    private void updateAnchor(Anchor anchor, Point2D otherAnchorPos, double c1Length) {
-        Point2D endPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
-        Point2D c2Direction = endPoint.subtract(otherAnchorPos).normalize();
-        Point2D c1Pos = endPoint.add(c2Direction.multiply(c1Length));
-        anchor.centerXProperty().set(c1Pos.getX());
-        anchor.centerYProperty().set(c1Pos.getY());
+    private void updateAnchor(Anchor anchor, Point2D otherAnchorPos) {
+        Point2D midPoint = new Point2D(curve2.getStartX(), curve2.getStartY());
+        Point2D c2Direction = midPoint.subtract(otherAnchorPos).normalize();
+        
+        final double c2Length = getAutoC2Length(control2.getCenter());
+        
+        Point2D c2Pos = midPoint.add(c2Direction.multiply(c2Length));
+        anchor.centerXProperty().set(c2Pos.getX());
+        anchor.centerYProperty().set(c2Pos.getY());
     }
 }

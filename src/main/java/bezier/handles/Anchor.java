@@ -14,7 +14,7 @@ import javafx.scene.shape.StrokeType;
 public class Anchor extends Circle {
     Anchor(Color color, DoubleProperty x, DoubleProperty y, double size) {
         super(x.get(), y.get(), size);
-        setFill(color.deriveColor(1, 1, 1, 0.1));
+        setFill(color.deriveColor(1, 1, 1, 0.8));
         setStroke(color);
         setStrokeWidth(2);
         setStrokeType(StrokeType.INSIDE);
