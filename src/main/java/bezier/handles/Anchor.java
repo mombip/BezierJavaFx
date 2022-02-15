@@ -26,7 +26,6 @@ public class Anchor extends Circle {
 
 
 
-
     // make a node movable by dragging it around with the mouse.
     private void enableDrag() {
         final Delta dragDelta = new Delta();
@@ -58,6 +57,7 @@ public class Anchor extends Circle {
                 if (newY > 0 && newY < getScene().getHeight()) {
                     setCenterY(newY);
                 }
+
                 mouseEvent.consume();
             }
         });
